@@ -56,7 +56,6 @@ var PasswordTool = (function () {
                 break;
             obfuscated = PasswordTool.md5(obfuscated, key);
             obfuscated = PasswordTool.encrypt(obfuscated, key);
-            console.log(obfuscated);
         }
         return obfuscated;
     };

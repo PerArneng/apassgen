@@ -6,6 +6,7 @@
         "outDir": "target"
     },
     "files": [
-        "./src/main/ts/main.ts"
+        "./src/main/ts/main.ts",
+        "./src/main/ts/quotes.ts"
     ]
 }
