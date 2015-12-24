@@ -48,7 +48,7 @@ class QuoteObfuscationSource implements apassgen.ObfuscationSource {
 console.log(colors.green.bold("APassgen 1.0"))
 
 var quoteList = new Array<quotes.Quote>()
-quoteList.push(new quotes.Quote("A picture says more etc", "last word?", "etc"))
+quoteList.push(new quotes.Quote("A picture says more etc", "Per", "last word?", "etc"))
 
 var lineReader = new io.LineReader()
 
