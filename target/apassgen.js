@@ -1,3 +1,5 @@
+///<reference path="../../../typings/node.d.ts" />
+var crypto = require('crypto');
 var PasswordTool = (function () {
     function PasswordTool() {
         this.charsLowerAlpha = new Array();
@@ -26,22 +28,51 @@ var PasswordTool = (function () {
         this.charClasses.push(this.charsSpecial);
         this.charClasses.push(this.charsNumerical);
     }
-    PasswordTool.prototype.createSibling = function (password) {
-        var length = password.length;
-        for (var _i = 0; _i < password.length; _i++) {
-            var c = password[_i];
-            var currentClass = this.charsLowerAlpha;
-            for (var _a = 0, _b = this.charClasses; _a < _b.length; _a++) {
-                var charClass = _b[_a];
-                if (charClass.indexOf(c) > -1) {
-                    currentClass = charClass;
-                }
-            }
-            var newChar = currentClass[0];
-            console.log(newChar);
-            console.log(c);
+    PasswordTool.prototype.createSibling = function (password, obfuscationSource) {
+        var charClassesToUse = PasswordTool.getCharClasses(password, this.charClasses);
+        PasswordTool.obfuscate(password, obfuscationSource);
+        var newPassword = "";
+        for (var i = 0; i < password.length; i++) {
+            newPassword = newPassword + charClassesToUse[i][0];
         }
+        console.log(newPassword);
         return password;
+    };
+    PasswordTool.md5 = function (str, key) {
+        var md5 = crypto.createHash("sha256");
+        md5.update(str + key, "utf8");
+        return md5.digest("hex");
+    };
+    PasswordTool.encrypt = function (str, key) {
+        var crypt = crypto.createCipher("aes192", key);
+        crypt.update(str);
+        return crypt.final("hex");
+    };
+    PasswordTool.obfuscate = function (str, obfuscationSource) {
+        var obfuscated = str;
+        while (true) {
+            var key = obfuscationSource.next();
+            if (key == null)
+                break;
+            obfuscated = PasswordTool.md5(obfuscated, key);
+            obfuscated = PasswordTool.encrypt(obfuscated, key);
+            console.log(obfuscated);
+        }
+        return obfuscated;
+    };
+    PasswordTool.getCharClasses = function (str, availableCharClasses) {
+        var charClassesToUse = new Array();
+        return str.split("").map(function (c) { return PasswordTool.classifyChar(c, availableCharClasses); });
+    };
+    PasswordTool.classifyChar = function (chr, availableCharClasses) {
+        var currentClass = availableCharClasses[0];
+        for (var _i = 0; _i < availableCharClasses.length; _i++) {
+            var charClass = availableCharClasses[_i];
+            if (charClass.indexOf(chr) > -1) {
+                currentClass = charClass;
+            }
+        }
+        return currentClass;
     };
     return PasswordTool;
 })();

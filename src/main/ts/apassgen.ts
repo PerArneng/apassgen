@@ -1,4 +1,11 @@
 
+///<reference path="../../../typings/node.d.ts" />
+import crypto = require('crypto')
+
+export interface ObfuscationSource {
+    next():string
+}
+
 export class PasswordTool {
            
     charsLowerAlpha:Array<string> = new Array<string>();    
@@ -32,28 +39,65 @@ export class PasswordTool {
         this.charClasses.push(this.charsNumerical)
     }
         
-    createSibling(password:string) : string {
+    createSibling(password:string, obfuscationSource:ObfuscationSource) : string {
         
-        var length = password.length;
+        var charClassesToUse = PasswordTool.getCharClasses(password, this.charClasses)
         
-        for (var c of password) {
-                       
-            var currentClass = this.charsLowerAlpha;
-          
-            for (var charClass of this.charClasses) {
-                if (charClass.indexOf(c) > -1) {
-                    currentClass = charClass;
-                }
-            }
-            
-            var newChar = currentClass[0]
-            
-            console.log(newChar)
-            console.log(c)
+        
+        PasswordTool.obfuscate(password, obfuscationSource)
+        
+        var newPassword = ""
+        for (var i=0;i<password.length;i++) {
+            newPassword = newPassword + charClassesToUse[i][0]
         }
         
-        return password;
+        console.log(newPassword)
+        
+        return password
     }
+    
+    static md5(str:string, key:string) {
+        var md5 = crypto.createHash("sha256")
+        md5.update(str + key, "utf8")
+        return md5.digest("hex")
+    }
+    
+    static encrypt(str:string, key:string):string {
+        var crypt = crypto.createCipher("aes192", key)
+        crypt.update(str)
+        return crypt.final("hex")
+    }
+    
+    static obfuscate(str:string, obfuscationSource:ObfuscationSource):string {
+
+        var obfuscated = str;
+        while (true) {
+            var key = obfuscationSource.next()
+            if (key == null) break
+            obfuscated = PasswordTool.md5(obfuscated, key)
+            obfuscated = PasswordTool.encrypt(obfuscated, key)
+        }
+        
+        return obfuscated
+    }
+    
+    static getCharClasses(str:string, availableCharClasses:Array<Array<string>>): Array<Array<string>> {
+        var charClassesToUse = new Array<Array<string>>()
+        
+        return str.split("").map(c => PasswordTool.classifyChar(c, availableCharClasses))
+    }
+    
+    static classifyChar(chr:string, availableCharClasses:Array<Array<string>>) : Array<string> {
+        var currentClass = availableCharClasses[0]
+
+        for (var charClass of availableCharClasses) {
+            if (charClass.indexOf(chr) > -1) {
+                currentClass = charClass
+            }
+        }
+        return currentClass
+    }
+    
        
 }
 
